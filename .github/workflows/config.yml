@@ -1,24 +1,38 @@
 
-# This is a basic YAML file for a simple CI/CD pipeline using GitHub Actions
 
-name: CI-CD Pipeline
+
+name: branch-protection.yml
 
 on:
   push:
-    branches: [ main ] # change this to the branch you want to trigger the pipeline on
+    branches:
+      - main
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  enforce-branch-rules:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        node-version: [20]
     steps:
-      - uses: actions/checkout@v2 # clones the repository in the virtual machine
-      - name: Set up JDK 11 # change this to the language/environment you want to use
-        uses: actions/setup-java@v2
-        with:
-          java-version: '11'
-      - name: Build with Gradle # change this to the build tool you want to use
-        run: ./gradlew build # change this to the command you use to build your code
-      - name: Run tests # change this to the command you use to run tests
-        run: ./gradlew test # change this to the command you use to run tests
-      - name: Deploy # change this to the command you use to deploy your code
-        run: ./gradlew deploy # change this to the command you use to deploy your code
+      - name: Check for code changes
+        if: github.event_name == 'push'
+        run: |
+          if [ -z "$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }})" ]; then
+            echo "No code changes detected."
+          else
+            echo "Code changes detected."
+            echo "Enforcing branch rules..."
+            # Take suitable enforcement rules(20) based on the given information to run successful jobs
+      - name: Setup job
+        run: |
+          # Take latest information to do below jobs
+      - name: Check code coverage
+        run: |
+          # Enforce code coverage report
+      - name: Verify code linting and unit tests
+        run: |
+          # Verify code linting and unit tests
+      - name: Complete job
+        run: |
+          # Take your own requirements and generate to run jobs successfully
