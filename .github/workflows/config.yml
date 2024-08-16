@@ -1,0 +1,24 @@
+
+# This is a basic YAML file for a simple CI/CD pipeline using GitHub Actions
+
+name: CI-CD Pipeline
+
+on:
+  push:
+    branches: [ main ] # change this to the branch you want to trigger the pipeline on
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2 # clones the repository in the virtual machine
+      - name: Set up JDK 11 # change this to the language/environment you want to use
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+      - name: Build with Gradle # change this to the build tool you want to use
+        run: ./gradlew build # change this to the command you use to build your code
+      - name: Run tests # change this to the command you use to run tests
+        run: ./gradlew test # change this to the command you use to run tests
+      - name: Deploy # change this to the command you use to deploy your code
+        run: ./gradlew deploy # change this to the command you use to deploy your code
