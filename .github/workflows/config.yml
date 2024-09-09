@@ -1,32 +1,29 @@
-
-
-name: branch-protection.yml
-
+name: deploy-multi-env.yml
 on:
   push:
     branches:
       - main
-
 jobs:
-  enforce-branch-rules:
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        node: [20]
-
+  deploy:
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.9
     steps:
-      - name: Check for code changes
-        if: github.event_name == 'push'
-        run: echo "Checking for code changes..."
-
-      - name: Enforce code coverage report
-        if: success()
-        run: echo "Enforcing code coverage report..."
-
-      - name: Verify code linting and unit tests
-        if: success()
-        run: echo "Verifying code linting and unit tests..."
-
-      - name: Complete job
-        if: success()
-        run: echo "Job completed successfully."
+      - name: Checkout code from main branch
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: pip install boto3
+      - name: deploy_staging
+        if: github.event.ref == 'refs/heads/staging'
+        steps:
+          - name: Use AWS credentials stored in ${{ secrets.AWS_STAGING_KEY }} and ${{ secrets.AWS_STAGING_SECRET }}
+            run: aws configure set aws_access_key_id ${{ secrets.AWS_STAGING_KEY }} && aws configure set aws_secret_access_key ${{ secrets.AWS_STAGING_SECRET }}
+          - name: Configure environment variables for staging deployment using boto3
+            run: python configure_env_variables.py staging
+      - name: deploy_production
+        if: github.event.ref == 'refs/heads/master'
+        steps:
+          - name: Use AWS credentials stored in ${{ secrets.AWS_PRODUCTION_KEY }} and ${{ secrets.AWS_PRODUCTION_SECRET }}
+            run: aws configure set aws_access_key_id ${{ secrets.AWS_PRODUCTION_KEY }} && aws configure set aws_secret_access_key ${{ secrets.AWS_PRODUCTION_SECRET }}
+          - name: Configure environment variables for production deployment using boto3
+            run: python configure_env_variables.py production
